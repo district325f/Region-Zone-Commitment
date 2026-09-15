@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.4.1</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.4.2</title>
 
   <style>
     :root {
@@ -1048,7 +1048,101 @@
       }
       .report-table td:nth-child(3)::before { content: "Club: "; color: var(--muted); font-weight: 700; }
       .report-table td:nth-child(4)::before { content: "Position: "; color: var(--muted); font-weight: 700; }
-      .report-table td:nth-child(5)::before { content: "Commitment: "; color: var(--muted); font-weight: 700; }
+      
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    /* ===== v1.4.2 PDF REPORT ===== */
+    .report-actions { display:flex; gap:8px; align-items:center; }
+    .pdf-btn {
+      border: 0;
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 0 15px;
+      background: linear-gradient(120deg, #b11f2e, #dc3545);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 7px 16px rgba(177,31,46,.18);
+    }
+    .pdf-btn:disabled { opacity:.6; cursor:wait; }
+
+    .pdf-report-template {
+      position: fixed;
+      left: -100000px;
+      top: 0;
+      width: 1040px;
+      background: #fff;
+      color: #111827;
+      padding: 32px 34px 28px;
+      font-family: Arial, "Noto Sans Devanagari", sans-serif;
+    }
+    .pdf-letterhead {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:18px;
+      padding-bottom:16px;
+      border-bottom:2px solid #174f9c;
+      text-align:center;
+    }
+    .pdf-logo { width:82px; height:82px; object-fit:contain; }
+    .pdf-org h1 { margin:0; font-size:28px; color:#123b73; }
+    .pdf-org h2 { margin:5px 0; font-size:21px; color:#1c5ca8; }
+    .pdf-org div { font-size:13px; font-weight:700; color:#56647b; }
+    .pdf-topic-title {
+      margin:20px 0 8px;
+      text-align:center;
+      font-size:19px;
+      line-height:1.5;
+      font-weight:900;
+    }
+    .pdf-meta {
+      text-align:center;
+      margin-bottom:14px;
+      font-size:12px;
+      color:#5b6575;
+    }
+    .pdf-table { width:100%; border-collapse:collapse; font-size:11px; }
+    .pdf-table th {
+      background:#edf4fd;
+      color:#173c70;
+      border:1px solid #cfd9e8;
+      padding:8px 7px;
+      text-align:left;
+    }
+    .pdf-table td {
+      border:1px solid #dce3ec;
+      padding:8px 7px;
+      vertical-align:top;
+    }
+    .pdf-table tr { page-break-inside:avoid; break-inside:avoid; }
+    .pdf-summary {
+      margin-top:14px;
+      padding:11px 13px;
+      border:1px solid #d7e0ed;
+      background:#f7faff;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      line-height:1.7;
+    }
+    .pdf-footer {
+      margin-top:15px;
+      text-align:center;
+      font-size:10px;
+      color:#788397;
+    }
+    @media (max-width:720px) {
+      .report-actions { flex-direction:column; align-items:stretch; }
+      .pdf-btn, .report-actions .lock-again { min-height:38px; padding:0 10px; font-size:11px; }
+      .report-table td:nth-child(5)::before { content:"Mobile: "; color:var(--muted); font-weight:700; }
+      .report-table td:nth-child(6)::before { content:"Commitment: "; color:var(--muted); font-weight:700; }
+      .report-table td:nth-child(5) { font-weight:700; color:#25354f; }
+      .report-table td:nth-child(6) { font-weight:900; color:var(--navy); }
     }
   </style>
 
@@ -1148,7 +1242,10 @@
             <span class="section-kicker">Verified Report</span>
             <h3 id="topicReportTitle">Topic Report</h3>
           </div>
-          <button id="changeTopic" class="lock-again" type="button">Change Topic</button>
+          <div class="report-actions">
+            <button id="downloadTopicPdf" class="pdf-btn" type="button">Download PDF</button>
+            <button id="changeTopic" class="lock-again" type="button">Change Topic</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table class="report-table">
@@ -1158,6 +1255,7 @@
                 <th>Chairperson Name</th>
                 <th>Club</th>
                 <th>Position</th>
+                <th>Mobile Number</th>
                 <th>Commitment / Amount</th>
               </tr>
             </thead>
@@ -1255,6 +1353,7 @@
     let selectedName = '';
     let topics = [];
     let pinPurpose = 'chairperson';
+    let lastTopicReport = null;
 
     document.addEventListener('DOMContentLoaded', function () {
       loadChairpersons();
@@ -1539,6 +1638,7 @@
     }
 
     function renderTopicReport(data) {
+      lastTopicReport = data;
       const summary = data.summary || {};
       const contributors = data.contributors || [];
 
@@ -1557,7 +1657,7 @@
       if (!contributors.length) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
-        cell.colSpan = 5;
+        cell.colSpan = 6;
         cell.className = 'empty-report';
         cell.textContent = 'यो topic/filter मा commitment/contribution data भेटिएन।';
         row.appendChild(cell);
@@ -1571,6 +1671,7 @@
             item.name || '—',
             item.club || '—',
             item.position || '—',
+            item.phone || '—',
             item.amount !== null && item.amount !== undefined
               ? formatCurrencyAmount(item.amount, item.currency)
               : (item.value || '—')
@@ -1588,6 +1689,122 @@
       setTimeout(function () {
         topicResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 60);
+    }
+
+
+    document.getElementById('downloadTopicPdf').addEventListener('click', downloadTopicPdf);
+
+    async function downloadTopicPdf() {
+      if (!lastTopicReport) {
+        showTopicStatus('पहिले Topic Report खोल्नुहोस्।', 'error');
+        return;
+      }
+
+      if (typeof html2pdf === 'undefined') {
+        showTopicStatus('PDF library load हुन सकेन। Internet connection check गर्नुहोस्।', 'error');
+        return;
+      }
+
+      const button = document.getElementById('downloadTopicPdf');
+      const oldText = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Creating PDF...';
+
+      try {
+        buildPdfTemplate(lastTopicReport);
+
+        const element = document.getElementById('pdfReportTemplate');
+        const topicName = (lastTopicReport.topic || 'Topic-Report')
+          .replace(/[\\/:*?"<>|]+/g, '-')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const options = {
+          margin: [8, 7, 8, 7],
+          filename: 'District-325F-' + topicName + '.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'landscape'
+          },
+          pagebreak: {
+            mode: ['css', 'legacy'],
+            avoid: ['tr']
+          }
+        };
+
+        await html2pdf().set(options).from(element).save();
+      } catch (error) {
+        showTopicStatus('PDF बनाउन सकिएन। ' + (error.message || error), 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = oldText;
+      }
+    }
+
+    function buildPdfTemplate(data) {
+      const summary = data.summary || {};
+      const contributors = data.contributors || [];
+      const filterText = topicPositionFilter.options[topicPositionFilter.selectedIndex]
+        ? topicPositionFilter.options[topicPositionFilter.selectedIndex].text
+        : 'All Region + Zone';
+
+      document.getElementById('pdfTopicTitle').textContent = data.topic || 'Topic Report';
+      document.getElementById('pdfMeta').textContent = 'Filter: ' + filterText;
+
+      const tbody = document.getElementById('pdfTopicRows');
+      tbody.innerHTML = '';
+
+      contributors.forEach(function (item, index) {
+        const tr = document.createElement('tr');
+        const values = [
+          String(index + 1),
+          item.name || '—',
+          item.club || '—',
+          item.position || '—',
+          item.phone || '—',
+          item.amount !== null && item.amount !== undefined
+            ? formatCurrencyAmount(item.amount, item.currency)
+            : (item.value || '—')
+        ];
+
+        values.forEach(function (value) {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      if (!contributors.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 6;
+        td.textContent = 'No contribution / commitment data found for this topic/filter.';
+        td.style.textAlign = 'center';
+        td.style.padding = '20px';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      const totals = summary.hasNumericAmounts
+        ? formatCurrencyTotals(summary.totals || [])
+        : 'N/A';
+
+      document.getElementById('pdfSummary').textContent =
+        'Total Contributors: ' + (summary.totalContributors || 0) +
+        '   |   Region: ' + (summary.regionCount || 0) +
+        '   |   Zone: ' + (summary.zoneCount || 0) +
+        '   |   Total Amount: ' + totals;
     }
 
     function formatNumber(value) {
