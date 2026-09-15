@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.1</title>
 
   <style>
     :root {
@@ -465,6 +465,401 @@
       .details-head { align-items: center; }
     }
   </style>
+
+  <style>
+    /* ===== v1.1 ADVANCED RESPONSIVE DESIGN — additive visual update ===== */
+    :root {
+      --glass: rgba(255,255,255,.82);
+      --glass-line: rgba(255,255,255,.7);
+      --deep: #071d46;
+      --royal: #0d438f;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(16,44,99,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16,44,99,.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    .topbar {
+      min-height: 185px;
+      background:
+        radial-gradient(circle at 75% 25%, rgba(244,185,66,.17), transparent 23%),
+        radial-gradient(circle at 12% 8%, rgba(68,139,235,.32), transparent 25%),
+        linear-gradient(120deg, #071d46 0%, #0d3677 52%, #1764bd 100%);
+    }
+
+    .brand { padding-top: 4px; }
+
+    .brand-mark {
+      width: 62px;
+      height: 62px;
+      border-radius: 21px;
+      position: relative;
+      isolation: isolate;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25), inset 0 1px rgba(255,255,255,.65);
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 5px;
+      border: 1px solid rgba(16,44,99,.22);
+      border-radius: 16px;
+      z-index: -1;
+    }
+
+    .brand h1 { font-weight: 900; }
+    .brand p { font-size: 14px; }
+
+    .selector-panel {
+      border: 1px solid var(--glass-line);
+      background: var(--glass);
+      box-shadow:
+        0 25px 70px rgba(7,29,70,.13),
+        inset 0 1px rgba(255,255,255,.95);
+    }
+
+    .section-kicker {
+      box-shadow: inset 0 1px #fff;
+    }
+
+    .form-grid { margin-top: 4px; }
+
+    .field {
+      padding: 13px;
+      border-radius: 19px;
+      background: rgba(246,249,254,.8);
+      border: 1px solid #e8edf5;
+    }
+
+    .field label {
+      display: flex;
+      align-items: center;
+      min-height: 20px;
+    }
+
+    select {
+      box-shadow: 0 6px 18px rgba(16,44,99,.045);
+      cursor: pointer;
+    }
+
+    .profile {
+      background:
+        radial-gradient(circle at 85% 10%, rgba(255,210,94,.22), transparent 25%),
+        linear-gradient(125deg, #071f4b 0%, #104b9c 58%, #2377d2 100%);
+      box-shadow: 0 22px 55px rgba(7,31,75,.23);
+    }
+
+    .profile::before {
+      content: "VERIFIED";
+      position: absolute;
+      right: 25px;
+      top: 22px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.1px;
+    }
+
+    .avatar {
+      box-shadow: 0 12px 25px rgba(0,0,0,.2);
+    }
+
+    .data-card {
+      min-height: 128px;
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,1), rgba(249,251,255,1));
+    }
+
+    .data-card:hover {
+      transform: translateY(-3px);
+      border-color: #cbdcf5;
+      box-shadow: 0 15px 32px rgba(16,44,99,.09);
+    }
+
+    .data-card:nth-child(3n+1)::before { background: #2b79df; }
+    .data-card:nth-child(3n+2)::before { background: #f4b942; }
+    .data-card:nth-child(3n+3)::before { background: #4ca477; }
+
+    .modal-card {
+      border: 1px solid rgba(255,255,255,.8);
+      box-shadow: 0 35px 100px rgba(0,0,0,.32);
+    }
+
+    .lock-icon {
+      box-shadow: inset 0 1px #fff;
+    }
+
+    .footer::before {
+      content: "◆";
+      margin-right: 7px;
+      color: var(--gold);
+    }
+
+    /* ===== MOBILE APP-LIKE EXPERIENCE ===== */
+    @media (max-width: 720px) {
+      body {
+        background: #f1f5fb;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .topbar {
+        min-height: 165px;
+        padding:
+          calc(16px + env(safe-area-inset-top))
+          15px 56px;
+        border-radius: 0 0 30px 30px;
+      }
+
+      .brand {
+        align-items: center;
+        gap: 11px;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        border-radius: 16px;
+        font-size: 22px;
+      }
+
+      .brand-mark::after {
+        inset: 4px;
+        border-radius: 12px;
+      }
+
+      .brand h1 {
+        font-size: 20px;
+        line-height: 1.15;
+      }
+
+      .brand p {
+        margin-top: 4px;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .wrap {
+        width: calc(100% - 20px);
+        margin-top: -42px;
+        margin-bottom: 18px;
+      }
+
+      .selector-panel {
+        padding: 17px 14px 15px;
+        border-radius: 24px;
+      }
+
+      .section-kicker {
+        font-size: 10px;
+        padding: 6px 9px;
+      }
+
+      .selector-panel h2 {
+        margin-top: 10px;
+        font-size: 21px;
+        line-height: 1.2;
+      }
+
+      .selector-panel .lead {
+        font-size: 12px;
+        line-height: 1.55;
+        margin-bottom: 15px;
+      }
+
+      .form-grid {
+        gap: 10px;
+      }
+
+      .field {
+        padding: 10px;
+        border-radius: 17px;
+      }
+
+      .field label {
+        font-size: 12px;
+        margin-bottom: 7px;
+      }
+
+      select {
+        min-height: 51px;
+        border-radius: 13px;
+        font-size: 14px;
+        padding-left: 12px;
+      }
+
+      .status {
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .result {
+        margin-top: 13px;
+      }
+
+      .profile {
+        padding: 18px 15px;
+        border-radius: 23px;
+      }
+
+      .profile::before {
+        right: 14px;
+        top: 13px;
+        font-size: 8px;
+        padding: 5px 7px;
+      }
+
+      .profile-main {
+        gap: 11px;
+        padding-top: 18px;
+      }
+
+      .avatar {
+        width: 55px;
+        height: 55px;
+        flex-basis: 55px;
+        border-radius: 17px;
+        font-size: 20px;
+      }
+
+      .profile h3 {
+        font-size: 20px;
+        line-height: 1.25;
+        padding-right: 3px;
+      }
+
+      .profile .meta {
+        margin-top: 8px;
+        gap: 5px;
+        font-size: 10px;
+      }
+
+      .meta span {
+        padding: 5px 7px;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .details-head {
+        margin: 18px 2px 10px;
+      }
+
+      .details-head h3 {
+        font-size: 18px;
+      }
+
+      .details-head p {
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .lock-again {
+        flex: 0 0 auto;
+        padding: 9px 10px;
+        font-size: 11px;
+      }
+
+      .cards {
+        gap: 9px;
+      }
+
+      .data-card {
+        min-height: auto;
+        padding: 14px 13px 14px 15px;
+        border-radius: 16px;
+      }
+
+      .data-card:hover {
+        transform: none;
+      }
+
+      .data-card .label {
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .data-card .value {
+        margin-top: 7px;
+        font-size: 15px;
+      }
+
+      .modal {
+        align-items: end;
+        padding: 0;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: none;
+        border-radius: 27px 27px 0 0;
+        padding:
+          22px 18px
+          calc(18px + env(safe-area-inset-bottom));
+        animation: mobileSheet .28s ease both;
+      }
+
+      @keyframes mobileSheet {
+        from { opacity: .5; transform: translateY(100%); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .lock-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        font-size: 21px;
+        margin-bottom: 12px;
+      }
+
+      .modal-card h3 {
+        font-size: 21px;
+      }
+
+      .modal-card p {
+        font-size: 12px;
+        margin-bottom: 14px;
+      }
+
+      .pin-input {
+        min-height: 56px;
+        font-size: 21px;
+        border-radius: 15px;
+      }
+
+      .btn {
+        min-height: 51px;
+        border-radius: 14px;
+        font-size: 13px;
+      }
+
+      .footer {
+        font-size: 10px;
+        padding-top: 20px;
+      }
+    }
+
+    @media (min-width: 721px) and (max-width: 980px) {
+      .wrap { width: calc(100% - 40px); }
+      .cards { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @media (min-width: 1180px) {
+      .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+  </style>
+
 </head>
 
 <body>
