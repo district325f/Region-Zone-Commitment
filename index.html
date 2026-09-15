@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.2</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.3</title>
 
   <style>
     :root {
@@ -1037,7 +1037,27 @@
         return;
       }
 
-      showStatus('Chairperson list load हुँदैछ…', 'info');
+      // v1.3 FAST LOAD:
+      // Use last successful list immediately, then refresh from Google in background.
+      let hasLocalData = false;
+
+      try {
+        const saved = sessionStorage.getItem('rz_chairpersons_v1');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.chairpersons) {
+            chairpersons = parsed.chairpersons;
+            hasLocalData = true;
+            clearStatus();
+          }
+        }
+      } catch (e) {
+        // Ignore browser storage errors and continue with live API.
+      }
+
+      if (!hasLocalData) {
+        showStatus('Chairperson list load हुँदैछ…', 'info');
+      }
 
       try {
         const data = await apiGet({ action: 'chairpersons' });
@@ -1045,9 +1065,28 @@
         if (!data.ok) throw new Error(data.message || 'Data load failed.');
 
         chairpersons = data.chairpersons || {};
+
+        try {
+          sessionStorage.setItem(
+            'rz_chairpersons_v1',
+            JSON.stringify({ chairpersons: chairpersons, savedAt: Date.now() })
+          );
+        } catch (e) {}
+
+        // If user already selected a type while refresh was running,
+        // refresh that dropdown without requiring another click.
+        if (positionSelect.value) {
+          const currentName = nameSelect.value;
+          fillNames(positionSelect.value);
+          if (currentName) nameSelect.value = currentName;
+        }
+
         clearStatus();
       } catch (error) {
-        showStatus('Chairperson list load हुन सकेन। ' + error.message, 'error');
+        // If cached list is available, keep system usable even if refresh is slow/fails.
+        if (!hasLocalData) {
+          showStatus('Chairperson list load हुन सकेन। ' + error.message, 'error');
+        }
       }
     }
 
@@ -1246,9 +1285,6 @@
       Object.keys(params).forEach(function (key) {
         url.searchParams.set(key, params[key]);
       });
-
-      // Avoid caching protected responses.
-      url.searchParams.set('_', Date.now());
 
       const response = await fetch(url.toString(), {
         method: 'GET',
