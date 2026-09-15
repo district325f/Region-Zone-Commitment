@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.5.0</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.5.1</title>
 
   <style>
     :root {
@@ -1482,7 +1482,9 @@
       } catch (error) {
         // If cached list is available, keep system usable even if refresh is slow/fails.
         if (!hasLocalData) {
-          showStatus('Chairperson list load हुन सकेन। ' + error.message, 'error');
+          if (!persistentChairCache) {
+          showStatus('Server सँग connection हुन सकेन। Retry गर्न page refresh गर्नुहोस्।', 'error');
+        }
         }
       }
     }
@@ -1666,19 +1668,50 @@
     async function loadTopics() {
       if (!isConfigured()) return;
 
+      const cacheKey = 'rz_topics_v151';
+      const cached = readPublicCache(cacheKey);
+
+      if (cached && Array.isArray(cached.topics) && cached.topics.length) {
+        populateTopics(cached.topics);
+      }
+
       try {
-        const data = await apiGet({ action: 'topics' });
+        const data = await apiGet({ action: 'topics' }, { retries: 3, timeout: 18000 });
         if (!data.ok) throw new Error(data.message || 'Topic load failed.');
 
         topics = data.topics || [];
-        topicSelect.innerHTML = '';
-        addOption(topicSelect, '', '— Topic छान्नुहोस् —');
-
-        topics.forEach(function (topic) {
-          addOption(topicSelect, String(topic.index), topic.label);
-        });
+        populateTopics(topics);
+        savePublicCache(cacheKey, { topics: topics });
+        clearTopicStatus();
       } catch (error) {
-        showTopicStatus('Topic list load हुन सकेन। ' + error.message, 'error');
+        if (cached && Array.isArray(cached.topics) && cached.topics.length) {
+          // Keep the system usable with the last successful public topic list.
+          clearTopicStatus();
+          return;
+        }
+
+        showTopicStatus(
+          'Server सँग connection हुन सकेन। Retry गर्न page refresh गर्नुहोस्।',
+          'error'
+        );
+      }
+    }
+
+    function populateTopics(topicList) {
+      topics = topicList || [];
+      const previous = topicSelect.value;
+
+      topicSelect.innerHTML = '';
+      addOption(topicSelect, '', '— Topic छान्नुहोस् —');
+
+      topics.forEach(function (topic) {
+        addOption(topicSelect, String(topic.index), topic.label);
+      });
+
+      if (previous && topics.some(function (topic) {
+        return String(topic.index) === String(previous);
+      })) {
+        topicSelect.value = previous;
       }
     }
 
@@ -2325,24 +2358,95 @@ th:nth-child(10),td:nth-child(10){width:11%}
         API_URL.endsWith('/exec');
     }
 
-    async function apiGet(params) {
-      const url = new URL(API_URL);
+    async function apiGet(params, options) {
+      const opts = options || {};
+      const retries = Number.isInteger(opts.retries) ? opts.retries : 2;
+      let lastError = null;
 
-      Object.keys(params).forEach(function (key) {
-        url.searchParams.set(key, params[key]);
-      });
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const url = new URL(API_URL);
+          Object.keys(params || {}).forEach(function (key) {
+            if (params[key] !== undefined && params[key] !== null) {
+              url.searchParams.set(key, params[key]);
+            }
+          });
 
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        cache: 'no-store',
-        redirect: 'follow'
-      });
+          // Unique retry token avoids an intermediary/browser reusing a failed response.
+          if (attempt > 0) {
+            url.searchParams.set('_retry', Date.now() + '-' + attempt);
+          }
 
-      if (!response.ok) {
-        throw new Error('HTTP ' + response.status);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(function () {
+            controller.abort();
+          }, opts.timeout || 18000);
+
+          let response;
+          try {
+            response = await fetch(url.toString(), {
+              method: 'GET',
+              cache: 'no-store',
+              redirect: 'follow',
+              signal: controller.signal
+            });
+          } finally {
+            clearTimeout(timeoutId);
+          }
+
+          if (!response.ok) {
+            const err = new Error('HTTP ' + response.status);
+            err.httpStatus = response.status;
+            throw err;
+          }
+
+          const text = await response.text();
+          let data;
+
+          try {
+            data = JSON.parse(text);
+          } catch (parseError) {
+            throw new Error('Server बाट valid JSON response आएन।');
+          }
+
+          return data;
+        } catch (error) {
+          lastError = error;
+
+          if (attempt < retries) {
+            await sleep(650 * (attempt + 1));
+            continue;
+          }
+        }
       }
 
-      return response.json();
+      throw lastError || new Error('Server connection failed.');
+    }
+
+    function sleep(ms) {
+      return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    function savePublicCache(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify({
+          savedAt: Date.now(),
+          value: value
+        }));
+      } catch (e) {}
+    }
+
+    function readPublicCache(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && parsed.value ? parsed.value : null;
+      } catch (e) {
+        return null;
+      }
     }
 
     async function sha256(text) {
