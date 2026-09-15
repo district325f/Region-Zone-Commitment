@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#102c63">
+  <title>Region-Zone Commitment | LY 2026/27</title>
+
+  <style>
+    :root {
+      --navy: #102c63;
+      --blue: #1759b8;
+      --blue2: #2b79df;
+      --gold: #f4b942;
+      --ink: #172033;
+      --muted: #6d7890;
+      --line: #e4e9f2;
+      --surface: rgba(255,255,255,.94);
+      --soft: #f4f7fc;
+      --yes: #137a4b;
+      --no: #b53636;
+      --shadow: 0 18px 50px rgba(16,44,99,.13);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Noto Sans Devanagari", "Nirmala UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(43,121,223,.14), transparent 28%),
+        radial-gradient(circle at 90% 8%, rgba(244,185,66,.13), transparent 24%),
+        linear-gradient(145deg, #edf3fb 0%, #f8faff 55%, #eef4fb 100%);
+    }
+
+    button, select, input { font: inherit; }
+
+    .topbar {
+      background: linear-gradient(120deg, #0b2454, #164d9e);
+      color: #fff;
+      padding: 22px 18px 62px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border: 42px solid rgba(255,255,255,.05);
+      border-radius: 50%;
+      right: -70px;
+      top: -110px;
+    }
+
+    .brand {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--gold), #ffd878);
+      color: #102c63;
+      font-size: 25px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .brand h1 {
+      margin: 0 0 3px;
+      font-size: clamp(20px, 3vw, 30px);
+      letter-spacing: -.4px;
+    }
+
+    .brand p {
+      margin: 0;
+      opacity: .78;
+      font-size: 13px;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 28px));
+      margin: -38px auto 36px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .selector-panel { padding: 26px; }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--blue);
+      background: #eaf2ff;
+      border: 1px solid #d9e7ff;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+
+    .selector-panel h2 {
+      margin: 12px 0 5px;
+      font-size: clamp(21px, 3vw, 28px);
+    }
+
+    .selector-panel .lead {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      margin: 0 0 8px 2px;
+      color: #33415e;
+    }
+
+    .select-wrap { position: relative; }
+
+    select, .pin-input {
+      width: 100%;
+      border: 1px solid #dce3ee;
+      background: #fff;
+      color: var(--ink);
+      border-radius: 15px;
+      min-height: 54px;
+      padding: 0 44px 0 15px;
+      outline: none;
+      transition: .2s ease;
+    }
+
+    select:focus, .pin-input:focus {
+      border-color: #77a8ed;
+      box-shadow: 0 0 0 4px rgba(43,121,223,.11);
+    }
+
+    select:disabled {
+      background: #f2f4f8;
+      color: #9aa4b6;
+      cursor: not-allowed;
+    }
+
+    .select-wrap::after {
+      content: "⌄";
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-55%);
+      pointer-events: none;
+      color: var(--blue);
+      font-weight: 900;
+    }
+
+    .status {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 13px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status.show { display: block; }
+    .status.error { color: #9f2d2d; background: #fff0f0; border: 1px solid #ffd2d2; }
+    .status.info { color: #23528d; background: #eef6ff; border: 1px solid #d5e8ff; }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result.show { display: block; animation: rise .35s ease both; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .profile {
+      padding: 24px;
+      background: linear-gradient(125deg, #102c63, #1d62bd);
+      color: #fff;
+      border-radius: 25px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      right: -55px;
+      bottom: -80px;
+    }
+
+    .profile-main {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .avatar {
+      width: 68px;
+      height: 68px;
+      flex: 0 0 68px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #ffd56b, #f0ae26);
+      color: #102c63;
+      font-size: 26px;
+      font-weight: 900;
+      border: 3px solid rgba(255,255,255,.65);
+    }
+
+    .profile h3 {
+      margin: 0 0 5px;
+      font-size: clamp(22px, 4vw, 31px);
+    }
+
+    .profile .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,.82);
+      font-size: 13px;
+    }
+
+    .meta span {
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .details-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 24px 4px 12px;
+    }
+
+    .details-head h3 { margin: 0; font-size: 21px; }
+    .details-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+    .lock-again {
+      border: 0;
+      background: #eaf2ff;
+      color: var(--blue);
+      font-weight: 800;
+      padding: 10px 13px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .data-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 17px;
+      box-shadow: 0 8px 22px rgba(23,32,51,.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .data-card::before {
+      content: "";
+      position: absolute;
+      width: 4px;
+      left: 0;
+      top: 13px;
+      bottom: 13px;
+      border-radius: 0 8px 8px 0;
+      background: #c8d9f2;
+    }
+
+    .data-card .label {
+      color: #59657a;
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 700;
+      padding-left: 4px;
+    }
+
+    .data-card .value {
+      margin-top: 10px;
+      font-size: 17px;
+      line-height: 1.45;
+      font-weight: 900;
+      color: #172033;
+      padding-left: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .pill.yes { background: #e8f7ef; color: var(--yes); }
+    .pill.no { background: #fff0f0; color: var(--no); }
+
+    .footer {
+      text-align: center;
+      color: #7b8598;
+      font-size: 12px;
+      padding: 24px 10px 8px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(8,20,45,.62);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal.show { display: grid; }
+
+    .modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 25px;
+      padding: 25px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.25);
+      animation: pop .22s ease both;
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: scale(.97) translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .lock-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 19px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 15px;
+      background: #eaf2ff;
+      color: var(--blue);
+      font-size: 25px;
+    }
+
+    .modal-card h3 { margin: 0 0 6px; font-size: 23px; }
+    .modal-card p { margin: 0 0 17px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .pin-input {
+      padding: 0 15px;
+      text-align: center;
+      letter-spacing: 5px;
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: .75fr 1.25fr;
+      gap: 10px;
+      margin-top: 13px;
+    }
+
+    .btn {
+      min-height: 49px;
+      border: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .6; cursor: wait; transform: none; }
+    .btn.secondary { background: #eef1f6; color: #44516a; }
+    .btn.primary { background: linear-gradient(120deg, var(--blue), var(--blue2)); color: #fff; }
+
+    .pin-message {
+      min-height: 20px;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--no);
+    }
+
+    .spinner {
+      width: 17px;
+      height: 17px;
+      display: inline-block;
+      border: 2px solid rgba(255,255,255,.45);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: -3px;
+      margin-right: 7px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 720px) {
+      .topbar { padding: 18px 14px 54px; }
+      .brand-mark { width: 46px; height: 46px; border-radius: 15px; }
+      .wrap { width: min(100% - 18px, 1100px); margin-top: -31px; }
+      .selector-panel { padding: 19px; border-radius: 22px; }
+      .form-grid, .cards { grid-template-columns: 1fr; }
+      .profile { padding: 19px; border-radius: 22px; }
+      .profile-main { align-items: flex-start; }
+      .avatar { width: 57px; height: 57px; flex-basis: 57px; border-radius: 18px; }
+      .details-head { align-items: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div>
+        <h1>Region–Zone Commitment</h1>
+        <p>Lions Year 2026/27 • Secure Commitment Viewer</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel selector-panel">
+      <span class="section-kicker">◆ Secure Access</span>
+      <h2>Chairperson Commitment Details</h2>
+      <p class="lead">पहिले पद र त्यसपछि Chairperson को नाम छान्नुहोस्। विवरण हेर्न PIN verification आवश्यक छ।</p>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="positionSelect">1. Chairperson Type</label>
+          <div class="select-wrap">
+            <select id="positionSelect">
+              <option value="">— Select Chairperson Type —</option>
+              <option value="Region Chairperson">Region Chairperson</option>
+              <option value="Zone Chairperson">Zone Chairperson</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="nameSelect">2. Chairperson Name</label>
+          <div class="select-wrap">
+            <select id="nameSelect" disabled>
+              <option value="">— पहिले Chairperson Type छान्नुहोस् —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </section>
+
+    <section id="result" class="result">
+      <div class="profile">
+        <div class="profile-main">
+          <div id="avatar" class="avatar">CP</div>
+          <div>
+            <h3 id="profileName">—</h3>
+            <div class="meta">
+              <span id="profilePosition">—</span>
+              <span id="profileClub">—</span>
+              <span id="profilePhone">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-head">
+        <div>
+          <h3>Commitment विवरण</h3>
+          <p>Google Sheet मा रहेको selected Chairperson को verified data</p>
+        </div>
+        <button class="lock-again" id="lockAgain" type="button">🔒 Lock</button>
+      </div>
+
+      <div id="cards" class="cards"></div>
+    </section>
+
+    <div class="footer">
+      Region–Zone Commitment LY 2026/27
+    </div>
+  </main>
+
+  <div id="pinModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="lock-icon">🔐</div>
+      <h3>PIN Verification</h3>
+      <p id="pinText">Selected Chairperson को विवरण सुरक्षित छ। PIN Code राखेर verify गर्नुहोस्।</p>
+
+      <input
+        id="pinInput"
+        class="pin-input"
+        type="password"
+        inputmode="numeric"
+        autocomplete="off"
+        placeholder="••••"
+        aria-label="PIN Code"
+      >
+
+      <div id="pinMessage" class="pin-message"></div>
+
+      <div class="modal-actions">
+        <button id="cancelPin" class="btn secondary" type="button">Cancel</button>
+        <button id="verifyPin" class="btn primary" type="button">Verify & View</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+     * IMPORTANT:
+     * Apps Script Web App deploy गरेपछि तलको URL replace गर्नुहोस्।
+     * Example:
+     * const API_URL = 'https://script.google.com/macros/s/XXXXX/exec';
+     */
+    const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+    const positionSelect = document.getElementById('positionSelect');
+    const nameSelect = document.getElementById('nameSelect');
+    const statusBox = document.getElementById('status');
+    const result = document.getElementById('result');
+
+    const pinModal = document.getElementById('pinModal');
+    const pinInput = document.getElementById('pinInput');
+    const pinMessage = document.getElementById('pinMessage');
+    const verifyPin = document.getElementById('verifyPin');
+    const cancelPin = document.getElementById('cancelPin');
+
+    let chairpersons = {};
+    let selectedPosition = '';
+    let selectedName = '';
+
+    document.addEventListener('DOMContentLoaded', loadChairpersons);
+
+    positionSelect.addEventListener('change', function () {
+      hideResult();
+      selectedPosition = this.value;
+      selectedName = '';
+      fillNames(selectedPosition);
+    });
+
+    nameSelect.addEventListener('change', function () {
+      hideResult();
+      selectedName = this.value;
+
+      if (selectedPosition && selectedName) {
+        openPinModal();
+      }
+    });
+
+    cancelPin.addEventListener('click', closePinModal);
+
+    document.getElementById('lockAgain').addEventListener('click', function () {
+      hideResult();
+      if (selectedName) openPinModal();
+    });
+
+    verifyPin.addEventListener('click', verifyAndLoad);
+
+    pinInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') verifyAndLoad();
+    });
+
+    pinModal.addEventListener('click', function (event) {
+      if (event.target === pinModal) closePinModal();
+    });
+
+    async function loadChairpersons() {
+      if (!isConfigured()) {
+        showStatus('index.html मा Apps Script Web App URL राख्न बाँकी छ।', 'error');
+        return;
+      }
+
+      showStatus('Chairperson list load हुँदैछ…', 'info');
+
+      try {
+        const data = await apiGet({ action: 'chairpersons' });
+
+        if (!data.ok) throw new Error(data.message || 'Data load failed.');
+
+        chairpersons = data.chairpersons || {};
+        clearStatus();
+      } catch (error) {
+        showStatus('Chairperson list load हुन सकेन। ' + error.message, 'error');
+      }
+    }
+
+    function fillNames(position) {
+      nameSelect.innerHTML = '';
+
+      if (!position) {
+        nameSelect.disabled = true;
+        addOption(nameSelect, '', '— पहिले Chairperson Type छान्नुहोस् —');
+        return;
+      }
+
+      const names = chairpersons[position] || [];
+      nameSelect.disabled = false;
+      addOption(nameSelect, '', '— Chairperson Name छान्नुहोस् —');
+
+      names.forEach(function (name) {
+        addOption(nameSelect, name, name);
+      });
+
+      if (!names.length) {
+        nameSelect.disabled = true;
+        nameSelect.innerHTML = '';
+        addOption(nameSelect, '', '— यस पदमा data भेटिएन —');
+      }
+    }
+
+    function addOption(select, value, text) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = text;
+      select.appendChild(option);
+    }
+
+    function openPinModal() {
+      pinInput.value = '';
+      pinMessage.textContent = '';
+      document.getElementById('pinText').textContent =
+        selectedName + ' को commitment विवरण हेर्न PIN Code verify गर्नुहोस्।';
+
+      pinModal.classList.add('show');
+      pinModal.setAttribute('aria-hidden', 'false');
+
+      setTimeout(function () {
+        pinInput.focus();
+      }, 80);
+    }
+
+    function closePinModal() {
+      pinModal.classList.remove('show');
+      pinModal.setAttribute('aria-hidden', 'true');
+      pinInput.value = '';
+      pinMessage.textContent = '';
+    }
+
+    async function verifyAndLoad() {
+      const pin = pinInput.value.trim();
+
+      if (!pin) {
+        pinMessage.textContent = 'PIN Code राख्नुहोस्।';
+        pinInput.focus();
+        return;
+      }
+
+      setVerifyLoading(true);
+      pinMessage.textContent = '';
+
+      try {
+        // Raw PIN is not placed in the request URL.
+        const pinHash = await sha256(pin);
+
+        const data = await apiGet({
+          action: 'details',
+          position: selectedPosition,
+          name: selectedName,
+          pinHash: pinHash
+        });
+
+        if (!data.ok) {
+          if (data.code === 'INVALID_PIN') {
+            pinMessage.textContent = data.message || 'PIN Code मिलेन।';
+            pinInput.select();
+            return;
+          }
+          throw new Error(data.message || 'Data load failed.');
+        }
+
+        closePinModal();
+        renderResult(data);
+      } catch (error) {
+        pinMessage.textContent = 'Verification हुन सकेन। ' + error.message;
+      } finally {
+        setVerifyLoading(false);
+      }
+    }
+
+    function renderResult(data) {
+      const profile = data.profile || {};
+      const fields = data.fields || [];
+
+      document.getElementById('profileName').textContent = profile.name || '—';
+      document.getElementById('profilePosition').textContent = profile.position || '—';
+      document.getElementById('profileClub').textContent = profile.club || '—';
+      document.getElementById('profilePhone').textContent =
+        profile.phone && profile.phone !== '—' ? '☎ ' + profile.phone : '☎ —';
+
+      document.getElementById('avatar').textContent = initials(profile.name);
+
+      const cards = document.getElementById('cards');
+      cards.innerHTML = '';
+
+      fields.forEach(function (field) {
+        const card = document.createElement('article');
+        card.className = 'data-card';
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = field.label;
+
+        const value = document.createElement('div');
+        value.className = 'value';
+        value.appendChild(formatValue(field.value));
+
+        card.appendChild(label);
+        card.appendChild(value);
+        cards.appendChild(card);
+      });
+
+      result.classList.add('show');
+      setTimeout(function () {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
+    }
+
+    function formatValue(rawValue) {
+      const value = String(rawValue == null ? '—' : rawValue).trim();
+      const normalized = value.toLowerCase();
+
+      if (normalized === 'yes') {
+        const pill = document.createElement('span');
+        pill.className = 'pill yes';
+        pill.textContent = '✓ Yes';
+        return pill;
+      }
+
+      if (normalized === 'no') {
+        const pill = document.createElement('span');
+        pill.className = 'pill no';
+        pill.textContent = '✕ No';
+        return pill;
+      }
+
+      return document.createTextNode(value || '—');
+    }
+
+    function initials(name) {
+      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return 'CP';
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function hideResult() {
+      result.classList.remove('show');
+    }
+
+    function setVerifyLoading(loading) {
+      verifyPin.disabled = loading;
+      cancelPin.disabled = loading;
+      pinInput.disabled = loading;
+
+      verifyPin.innerHTML = loading
+        ? '<span class="spinner"></span>Verifying…'
+        : 'Verify & View';
+    }
+
+    function showStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = 'status show ' + (type || 'info');
+    }
+
+    function clearStatus() {
+      statusBox.textContent = '';
+      statusBox.className = 'status';
+    }
+
+    function isConfigured() {
+      return API_URL &&
+        API_URL.startsWith('https://script.google.com/macros/s/') &&
+        API_URL.endsWith('/exec');
+    }
+
+    async function apiGet(params) {
+      const url = new URL(API_URL);
+
+      Object.keys(params).forEach(function (key) {
+        url.searchParams.set(key, params[key]);
+      });
+
+      // Avoid caching protected responses.
+      url.searchParams.set('_', Date.now());
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        cache: 'no-store',
+        redirect: 'follow'
+      });
+
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+
+      return response.json();
+    }
+
+    async function sha256(text) {
+      if (!window.crypto || !window.crypto.subtle) {
+        throw new Error('Secure browser आवश्यक छ।');
+      }
+
+      const bytes = new TextEncoder().encode(text);
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+
+      return Array.from(new Uint8Array(digest))
+        .map(function (byte) {
+          return byte.toString(16).padStart(2, '0');
+        })
+        .join('');
+    }
+  </script>
+</body>
+</html>
