@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.5.1</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.5.2</title>
 
   <style>
     :root {
@@ -1079,7 +1079,7 @@
 
   <style>
     /* ===== v1.5 ALL SUMMARY ===== */
-    .mode-switch { grid-template-columns: repeat(3, 1fr); }
+    .mode-switch { grid-template-columns: repeat(2, 1fr); }
     .all-summary-panel { display:none; }
     .all-summary-panel.show { display:block; }
     .status-badge {
@@ -1131,7 +1131,6 @@
     <section class="mode-switch panel" id="modeSwitch">
       <button class="mode-btn active" data-mode="chairperson" type="button">👤 Chairperson View</button>
       <button class="mode-btn" data-mode="topic" type="button">📊 Topic-wise View</button>
-      <button class="mode-btn" data-mode="summary" type="button">📋 All Summary</button>
     </section>
 
 <section class="panel selector-panel" id="chairpersonPanel">
@@ -1371,10 +1370,6 @@
     const topicSelect = document.getElementById('topicSelect');
     const topicPositionFilter = document.getElementById('topicPositionFilter');
     const topicStatus = document.getElementById('topicStatus');
-    const allSummaryPanel = document.getElementById('allSummaryPanel');
-    const allSummaryResult = document.getElementById('allSummaryResult');
-    const summaryPositionFilter = document.getElementById('summaryPositionFilter');
-    const summaryStatus = document.getElementById('summaryStatus');
 
     let chairpersons = {};
     let selectedPosition = '';
@@ -1382,7 +1377,6 @@
     let topics = [];
     let pinPurpose = 'chairperson';
     let lastTopicReport = null;
-    let lastAllSummary = null;
 
     document.addEventListener('DOMContentLoaded', function () {
       loadChairpersons();
@@ -1526,8 +1520,6 @@
       document.getElementById('pinText').textContent =
         pinPurpose === 'topic'
           ? 'Topic-wise contribution report हेर्न PIN Code verify गर्नुहोस्।'
-          : pinPurpose === 'summary'
-          ? 'All Summary Report हेर्न PIN Code verify गर्नुहोस्।'
           : selectedName + ' को commitment विवरण हेर्न PIN Code verify गर्नुहोस्।';
 
       pinModal.classList.add('show');
@@ -1568,12 +1560,6 @@
               positionFilter: topicPositionFilter.value,
               pinHash: pinHash
             }
-          : pinPurpose === 'summary'
-          ? {
-              action: 'allSummary',
-              positionFilter: summaryPositionFilter.value,
-              pinHash: pinHash
-            }
           : {
               action: 'details',
               position: selectedPosition,
@@ -1596,8 +1582,6 @@
 
         if (pinPurpose === 'topic') {
           renderTopicReport(data);
-        } else if (pinPurpose === 'summary') {
-          renderAllSummary(data);
         } else {
           renderResult(data);
         }
@@ -1622,15 +1606,10 @@
         closePinModal();
 
         topicPanel.classList.remove('show');
-        allSummaryPanel.classList.remove('show');
-        allSummaryResult.classList.remove('show');
 
         if (mode === 'topic') {
           chairpersonPanel.style.display = 'none';
           topicPanel.classList.add('show');
-        } else if (mode === 'summary') {
-          chairpersonPanel.style.display = 'none';
-          allSummaryPanel.classList.add('show');
         } else {
           chairpersonPanel.style.display = '';
         }
@@ -1784,147 +1763,6 @@
     }
 
 
-
-    document.getElementById('viewAllSummary').addEventListener('click', function () {
-      allSummaryResult.classList.remove('show');
-      pinPurpose = 'summary';
-      openPinModal();
-    });
-
-    summaryPositionFilter.addEventListener('change', function () {
-      allSummaryResult.classList.remove('show');
-      lastAllSummary = null;
-    });
-
-    document.getElementById('printAllSummary').addEventListener('click', printAllSummary);
-
-    function renderAllSummary(data) {
-      lastAllSummary = data;
-      const tbody = document.getElementById('allSummaryRows');
-      tbody.innerHTML = '';
-
-      (data.topics || []).forEach(function (item, index) {
-        const tr = document.createElement('tr');
-        const totalAmount = item.totals && item.totals.length
-          ? formatCurrencyTotals(item.totals)
-          : '—';
-
-        [
-          String(index + 1),
-          item.topic || '—',
-          String(item.yesCount || 0),
-          String(item.noCount || 0),
-          String(item.amountCount || 0),
-          String(item.otherCount || 0),
-          String(item.regionResponses || 0),
-          String(item.zoneResponses || 0),
-          String(item.totalResponses || 0),
-          totalAmount
-        ].forEach(function (value) {
-          const td = document.createElement('td');
-          td.textContent = value;
-          tr.appendChild(td);
-        });
-
-        tbody.appendChild(tr);
-      });
-
-      allSummaryResult.classList.add('show');
-      setTimeout(function () {
-        allSummaryResult.scrollIntoView({ behavior:'smooth', block:'start' });
-      }, 60);
-    }
-
-    function printAllSummary() {
-      if (!lastAllSummary) {
-        summaryStatus.textContent = 'पहिले All Summary Report खोल्नुहोस्।';
-        summaryStatus.className = 'status show error';
-        return;
-      }
-
-      const reportWindow = window.open('', '_blank', 'width=1250,height=850');
-      if (!reportWindow) {
-        summaryStatus.textContent = 'Print window open हुन सकेन। Browser popup allow गर्नुहोस्।';
-        summaryStatus.className = 'status show error';
-        return;
-      }
-
-      const rows = (lastAllSummary.topics || []).map(function (item, index) {
-        const totalAmount = item.totals && item.totals.length
-          ? formatCurrencyTotals(item.totals)
-          : '—';
-
-        return '<tr>' +
-          '<td class="c">' + (index + 1) + '</td>' +
-          '<td>' + escapeHtml(item.topic || '—') + '</td>' +
-          '<td class="c yes">' + (item.yesCount || 0) + '</td>' +
-          '<td class="c no">' + (item.noCount || 0) + '</td>' +
-          '<td class="c">' + (item.amountCount || 0) + '</td>' +
-          '<td class="c">' + (item.otherCount || 0) + '</td>' +
-          '<td class="c">' + (item.regionResponses || 0) + '</td>' +
-          '<td class="c">' + (item.zoneResponses || 0) + '</td>' +
-          '<td class="c">' + (item.totalResponses || 0) + '</td>' +
-          '<td class="amt">' + escapeHtml(totalAmount) + '</td>' +
-        '</tr>';
-      }).join('');
-
-      const logoUrl = new URL('logo.png', window.location.href).href;
-      const filterText = summaryPositionFilter.options[summaryPositionFilter.selectedIndex]
-        ? summaryPositionFilter.options[summaryPositionFilter.selectedIndex].text
-        : 'All Region + Zone';
-
-      reportWindow.document.open();
-      reportWindow.document.write(`<!DOCTYPE html>
-<html lang="ne">
-<head>
-<meta charset="UTF-8">
-<title>District 325 F - All Commitment Summary</title>
-<style>
-@page { size:A4 landscape; margin:10mm 8mm 12mm; }
-* { box-sizing:border-box; }
-body { margin:0; color:#172033; background:#fff; font-family:Arial,"Noto Sans Devanagari","Nirmala UI",sans-serif; font-size:9pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-.head { position:relative; min-height:76px; display:flex; justify-content:center; align-items:center; border-bottom:2.5px solid #174f9c; padding:0 90px 10px; }
-.logo { position:absolute; left:7px; width:68px; height:68px; object-fit:contain; }
-.org { text-align:center; }
-.org h1 { margin:0; color:#143d76; font-size:21pt; }
-.org h2 { margin:4px 0 2px; color:#1d62b3; font-size:15pt; }
-.org div { color:#69758a; font-weight:700; }
-.title { text-align:center; margin:12px 0 4px; font-size:14pt; font-weight:900; }
-.filter { text-align:center; color:#69758a; margin-bottom:10px; }
-table { width:100%; border-collapse:collapse; table-layout:fixed; }
-thead { display:table-header-group; }
-tr { page-break-inside:avoid; break-inside:avoid; }
-th { background:#eaf2fc; color:#183f73; border:1px solid #bdcce0; padding:6px 4px; font-size:7.8pt; text-align:left; }
-td { border:1px solid #d5deea; padding:5px 4px; vertical-align:top; line-height:1.3; overflow-wrap:anywhere; }
-th:nth-child(1),td:nth-child(1){width:4%}
-th:nth-child(2),td:nth-child(2){width:32%}
-th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4),th:nth-child(5),td:nth-child(5),th:nth-child(6),td:nth-child(6){width:6%}
-th:nth-child(7),td:nth-child(7),th:nth-child(8),td:nth-child(8){width:7%}
-th:nth-child(9),td:nth-child(9){width:9%}
-th:nth-child(10),td:nth-child(10){width:11%}
-.c{text-align:center}.yes{color:#14743c;font-weight:800}.no{color:#b4232f;font-weight:800}.amt{text-align:right;font-weight:800;color:#123b73;white-space:nowrap}
-.footer{margin-top:8px;padding-top:6px;border-top:1px solid #dce3ed;text-align:center;color:#7a8598;font-size:7.5pt}
-.note{padding:8px;text-align:center;background:#eef6ff;color:#174f9c;margin-bottom:8px}
-@media print{.note{display:none}}
-</style>
-</head>
-<body>
-<div class="note">Print dialog मा Save as PDF छान्नुहोस्। PDF text selectable/searchable रहनेछ।</div>
-<header class="head">
-<img class="logo" src="${escapeHtml(logoUrl)}" alt="Lions Logo">
-<div class="org"><h1>Lions International</h1><h2>District 325 F</h2><div>Lions Year 2026/27</div></div>
-</header>
-<div class="title">All Commitment Summary Report</div>
-<div class="filter">Filter: ${escapeHtml(filterText)}</div>
-<table>
-<thead><tr><th>S.N.</th><th>Topic</th><th>Yes</th><th>No</th><th>Amount</th><th>Other</th><th>Region</th><th>Zone</th><th>Total Responses</th><th>Total Amount</th></tr></thead>
-<tbody>${rows || '<tr><td colspan="10">No data found.</td></tr>'}</tbody>
-</table>
-<div class="footer">Lions International • District 325 F • Region–Zone Commitment • LY 2026/27</div>
-<script>window.addEventListener('load',function(){setTimeout(function(){window.print();},500)});<\/script>
-</body></html>`);
-      reportWindow.document.close();
-    }
 
     document.getElementById('downloadTopicPdf').addEventListener('click', downloadTopicPdf);
 
@@ -2133,7 +1971,7 @@ th:nth-child(10),td:nth-child(10){width:11%}
 
   <style>
     /* ===== v1.5 ALL SUMMARY ===== */
-    .mode-switch { grid-template-columns: repeat(3, 1fr); }
+    .mode-switch { grid-template-columns: repeat(2, 1fr); }
     .all-summary-panel { display:none; }
     .all-summary-panel.show { display:block; }
     .status-badge {
