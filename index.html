@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.5.2</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.5.3</title>
 
   <style>
     :root {
@@ -1113,6 +1113,29 @@
     }
   </style>
 
+
+  <style>
+    /* ===== v1.5.3 INDIVIDUAL PDF ===== */
+    .individual-actions {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    @media (max-width:720px) {
+      .individual-actions {
+        width:100%;
+        justify-content:flex-end;
+        flex-wrap:wrap;
+      }
+      .individual-actions .pdf-btn,
+      .individual-actions .lock-again {
+        min-height:38px;
+        padding:0 11px;
+        font-size:11px;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -1308,7 +1331,7 @@
           <h3>Commitment विवरण</h3>
           <p>Google Sheet मा रहेको selected Chairperson को verified data</p>
         </div>
-        <button class="lock-again" id="lockAgain" type="button">🔒 Lock</button>
+        <div class="individual-actions"><button id="printIndividualPdf" class="pdf-btn" type="button">PDF / Print</button><button class="lock-again" id="lockAgain" type="button">🔒 Lock</button></div>
       </div>
 
       <div id="cards" class="cards"></div>
@@ -1377,6 +1400,7 @@
     let topics = [];
     let pinPurpose = 'chairperson';
     let lastTopicReport = null;
+    let lastIndividualReport = null;
 
     document.addEventListener('DOMContentLoaded', function () {
       loadChairpersons();
@@ -1764,6 +1788,173 @@
 
 
 
+
+    const individualPdfButton = document.getElementById('printIndividualPdf');
+    if (individualPdfButton) {
+      individualPdfButton.addEventListener('click', printIndividualPdf);
+    }
+
+    function printIndividualPdf() {
+      if (!lastIndividualReport) {
+        return;
+      }
+
+      const reportWindow = window.open('', '_blank', 'width=1050,height=850');
+      if (!reportWindow) {
+        alert('PDF / Print window open हुन सकेन। Browser popup allow गर्नुहोस्।');
+        return;
+      }
+
+      const data = lastIndividualReport;
+      const profile = data.profile || {};
+      const fields = data.fields || [];
+
+      const rowsHtml = fields.length
+        ? fields.map(function (item, index) {
+            const label = item.label || item.header || item.name || '—';
+            const value = item.value !== undefined && item.value !== null
+              ? item.value
+              : '—';
+
+            const normalized = String(value).trim().toLowerCase();
+            let statusClass = '';
+            if (['yes','y','हो','हुन्छ','गर्ने','गर्छु'].includes(normalized)) statusClass = 'yes';
+            if (['no','n','छैन','होइन','नगर्ने','गर्दिन','गर्दिनँ'].includes(normalized)) statusClass = 'no';
+
+            return '<tr>' +
+              '<td class="sn">' + (index + 1) + '</td>' +
+              '<td>' + escapeHtml(label) + '</td>' +
+              '<td class="value ' + statusClass + '">' + escapeHtml(String(value || '—')) + '</td>' +
+            '</tr>';
+          }).join('')
+        : '<tr><td colspan="3" class="empty">No commitment details found.</td></tr>';
+
+      const logoUrl = new URL('logo.png', window.location.href).href;
+
+      reportWindow.document.open();
+      reportWindow.document.write(`<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escapeHtml(profile.name || 'Chairperson')} - Commitment Report</title>
+<style>
+@page { size:A4 portrait; margin:12mm 12mm 14mm; }
+* { box-sizing:border-box; }
+html,body {
+  margin:0; padding:0; background:#fff; color:#172033;
+  font-family:Arial,"Noto Sans Devanagari","Nirmala UI",sans-serif;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+body { font-size:10pt; }
+.note {
+  max-width:900px; margin:8px auto; padding:9px 12px;
+  text-align:center; background:#eef6ff; color:#174f9c;
+  border-radius:7px; font-size:10pt;
+}
+.letterhead {
+  position:relative; min-height:82px; display:flex;
+  align-items:center; justify-content:center;
+  border-bottom:2.5px solid #174f9c;
+  padding:2px 90px 11px;
+}
+.logo {
+  position:absolute; left:7px; top:2px;
+  width:72px; height:72px; object-fit:contain;
+}
+.org { text-align:center; }
+.org h1 { margin:0; color:#143d76; font-size:22pt; line-height:1.05; }
+.org h2 { margin:5px 0 2px; color:#1d62b3; font-size:16pt; }
+.org div { color:#69758a; font-size:9pt; font-weight:700; }
+.title {
+  margin:13px 0 9px; text-align:center;
+  font-size:15pt; font-weight:900; color:#172033;
+}
+.profile {
+  display:grid; grid-template-columns:1.35fr 1fr;
+  gap:0; border:1px solid #cbd7e6; border-radius:8px;
+  overflow:hidden; margin-bottom:12px;
+}
+.profile div {
+  padding:7px 9px; border-bottom:1px solid #dbe3ed;
+}
+.profile div:nth-child(odd) { border-right:1px solid #dbe3ed; }
+.profile div:nth-last-child(-n+2) { border-bottom:0; }
+.profile span {
+  display:block; color:#6b778b; font-size:7.8pt; margin-bottom:2px;
+}
+.profile strong { color:#163d73; font-size:10.5pt; }
+table { width:100%; border-collapse:collapse; table-layout:fixed; }
+thead { display:table-header-group; }
+tr { page-break-inside:avoid; break-inside:avoid; }
+th {
+  background:#eaf2fc; color:#183f73;
+  border:1px solid #bdcce0; padding:7px 6px;
+  text-align:left; font-size:8.8pt;
+}
+td {
+  border:1px solid #d5deea; padding:7px 6px;
+  vertical-align:top; line-height:1.4; overflow-wrap:anywhere;
+}
+th:nth-child(1),td:nth-child(1){width:7%}
+th:nth-child(2),td:nth-child(2){width:68%}
+th:nth-child(3),td:nth-child(3){width:25%}
+.sn { text-align:center; }
+.value { font-weight:800; color:#123b73; }
+.value.yes { color:#14743c; }
+.value.no { color:#b4232f; }
+.empty { text-align:center; padding:20px; color:#6b7280; }
+.footer {
+  margin-top:10px; padding-top:7px; border-top:1px solid #dce3ed;
+  text-align:center; color:#7a8598; font-size:8pt;
+}
+@media print { .note { display:none !important; } }
+</style>
+</head>
+<body>
+<div class="note">Print dialog मा <b>Save as PDF</b> छान्नुहोस्। PDF text selectable/searchable रहनेछ।</div>
+
+<header class="letterhead">
+  <img class="logo" src="${escapeHtml(logoUrl)}" alt="Lions Logo">
+  <div class="org">
+    <h1>Lions International</h1>
+    <h2>District 325 F</h2>
+    <div>Lions Year 2026/27</div>
+  </div>
+</header>
+
+<div class="title">Individual Chairperson Commitment Report</div>
+
+<section class="profile">
+  <div><span>Chairperson Name</span><strong>${escapeHtml(profile.name || '—')}</strong></div>
+  <div><span>Position</span><strong>${escapeHtml(profile.position || '—')}</strong></div>
+  <div><span>Club</span><strong>${escapeHtml(profile.club || '—')}</strong></div>
+  <div><span>Mobile Number</span><strong>${escapeHtml(profile.phone || '—')}</strong></div>
+</section>
+
+<table>
+  <thead>
+    <tr>
+      <th>S.N.</th>
+      <th>Commitment / Topic</th>
+      <th>Response / Amount</th>
+    </tr>
+  </thead>
+  <tbody>${rowsHtml}</tbody>
+</table>
+
+<div class="footer">Lions International • District 325 F • Region–Zone Commitment • LY 2026/27</div>
+
+<script>
+window.addEventListener('load',function(){
+  setTimeout(function(){ window.print(); },500);
+});
+<\/script>
+</body>
+</html>`);
+      reportWindow.document.close();
+    }
+
     document.getElementById('downloadTopicPdf').addEventListener('click', downloadTopicPdf);
 
     function downloadTopicPdf() {
@@ -2005,6 +2196,29 @@
     }
   </style>
 
+
+  <style>
+    /* ===== v1.5.3 INDIVIDUAL PDF ===== */
+    .individual-actions {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    @media (max-width:720px) {
+      .individual-actions {
+        width:100%;
+        justify-content:flex-end;
+        flex-wrap:wrap;
+      }
+      .individual-actions .pdf-btn,
+      .individual-actions .lock-again {
+        min-height:38px;
+        padding:0 11px;
+        font-size:11px;
+      }
+    }
+  </style>
+
 </head>
 <body>
 <div class="screen-note">
@@ -2101,6 +2315,7 @@
     }
 
     function renderResult(data) {
+      lastIndividualReport = data;
       const profile = data.profile || {};
       const fields = data.fields || [];
 
@@ -2167,6 +2382,7 @@
     }
 
     function hideResult() {
+      lastIndividualReport = null;
       result.classList.remove('show');
     }
 
