@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.4</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.4.1</title>
 
   <style>
     :root {
@@ -1548,7 +1548,7 @@
       document.getElementById('sumZone').textContent = summary.zoneCount || 0;
       document.getElementById('sumAmount').textContent =
         summary.hasNumericAmounts
-          ? 'Rs. ' + formatNumber(summary.totalAmount || 0)
+          ? formatCurrencyTotals(summary.totals || [])
           : 'N/A';
 
       const tbody = document.getElementById('topicRows');
@@ -1572,7 +1572,7 @@
             item.club || '—',
             item.position || '—',
             item.amount !== null && item.amount !== undefined
-              ? 'Rs. ' + formatNumber(item.amount)
+              ? formatCurrencyAmount(item.amount, item.currency)
               : (item.value || '—')
           ].forEach(function (text) {
             const td = document.createElement('td');
@@ -1594,6 +1594,21 @@
       return Number(value || 0).toLocaleString('en-IN', {
         maximumFractionDigits: 2
       });
+    }
+
+    function formatCurrencyAmount(amount, currency) {
+      const value = formatNumber(amount);
+      if (currency === 'USD') return '$' + value;
+      if (currency === 'NPR') return 'Rs. ' + value;
+      return value;
+    }
+
+    function formatCurrencyTotals(totals) {
+      if (!Array.isArray(totals) || !totals.length) return 'N/A';
+
+      return totals.map(function (item) {
+        return formatCurrencyAmount(item.amount, item.currency);
+      }).join(' + ');
     }
 
     function showTopicStatus(message, type) {
