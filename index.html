@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#102c63">
-  <title>Region-Zone Commitment | LY 2026/27 | v1.3</title>
+  <title>Region-Zone Commitment | LY 2026/27 | v1.4</title>
 
   <style>
     :root {
@@ -872,6 +872,186 @@
     }
   </style>
 
+
+  <style>
+    /* ===== v1.4 ADVANCED REPORT UI ===== */
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 7px;
+      margin-bottom: 14px;
+      border-radius: 18px;
+    }
+    .mode-btn {
+      border: 0;
+      min-height: 48px;
+      border-radius: 13px;
+      background: transparent;
+      color: #526079;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .mode-btn.active {
+      color: #fff;
+      background: linear-gradient(120deg, var(--blue), var(--blue2));
+      box-shadow: 0 8px 20px rgba(43,121,223,.22);
+    }
+    .topic-panel { display: none; }
+    .topic-panel.show { display: block; }
+    .topic-action {
+      width: 100%;
+      min-height: 52px;
+      margin-top: 16px;
+      border: 0;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(120deg, #102c63, #2377d2);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(16,44,99,.16);
+    }
+    .topic-result { display: none; margin-top: 18px; }
+    .topic-result.show { display: block; animation: rise .35s ease both; }
+    .topic-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 11px;
+      margin-bottom: 13px;
+    }
+    .summary-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      padding: 15px;
+      box-shadow: 0 8px 22px rgba(23,32,51,.05);
+    }
+    .summary-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+    .summary-card strong {
+      display: block;
+      color: var(--navy);
+      font-size: 23px;
+      overflow-wrap: anywhere;
+    }
+    .amount-card {
+      background: linear-gradient(145deg, #fffaf0, #fff);
+      border-color: #f4dfad;
+    }
+    .topic-report-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 19px;
+      box-shadow: var(--shadow);
+    }
+    .topic-report-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .topic-report-head h3 {
+      margin: 9px 0 0;
+      font-size: 20px;
+      line-height: 1.35;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+    }
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+    .report-table th {
+      text-align: left;
+      background: #f3f7fd;
+      color: #40506d;
+      font-size: 11px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .report-table td {
+      padding: 12px;
+      border-bottom: 1px solid #edf0f5;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    .report-table tr:last-child td { border-bottom: 0; }
+    .report-table td:last-child { font-weight: 900; color: var(--navy); }
+    .empty-report {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px !important;
+    }
+
+    @media (max-width: 720px) {
+      .mode-switch {
+        position: sticky;
+        top: 8px;
+        z-index: 15;
+        border-radius: 16px;
+        padding: 5px;
+      }
+      .mode-btn { min-height: 44px; font-size: 11px; }
+      .topic-summary {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 8px;
+      }
+      .summary-card { padding: 13px; border-radius: 15px; }
+      .summary-card strong { font-size: 19px; }
+      .topic-report-card { padding: 13px; border-radius: 19px; }
+      .topic-report-head { align-items: flex-start; }
+      .topic-report-head h3 { font-size: 16px; }
+      .table-wrap {
+        border: 0;
+        overflow: visible;
+      }
+      .report-table, .report-table tbody, .report-table tr, .report-table td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+      }
+      .report-table thead { display: none; }
+      .report-table tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 10px 12px;
+        background: #fff;
+      }
+      .report-table td {
+        border: 0;
+        padding: 4px 0;
+        font-size: 12px;
+      }
+      .report-table td:nth-child(1) {
+        display: inline-block;
+        width: auto;
+        color: var(--blue);
+        font-weight: 900;
+        margin-right: 5px;
+      }
+      .report-table td:nth-child(2) {
+        display: inline;
+        font-size: 14px;
+        font-weight: 900;
+      }
+      .report-table td:nth-child(3)::before { content: "Club: "; color: var(--muted); font-weight: 700; }
+      .report-table td:nth-child(4)::before { content: "Position: "; color: var(--muted); font-weight: 700; }
+      .report-table td:nth-child(5)::before { content: "Commitment: "; color: var(--muted); font-weight: 700; }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -886,7 +1066,13 @@
   </header>
 
   <main class="wrap">
-    <section class="panel selector-panel">
+    
+    <section class="mode-switch panel" id="modeSwitch">
+      <button class="mode-btn active" data-mode="chairperson" type="button">👤 Chairperson View</button>
+      <button class="mode-btn" data-mode="topic" type="button">📊 Topic-wise View</button>
+    </section>
+
+<section class="panel selector-panel" id="chairpersonPanel">
       <span class="section-kicker">◆ Secure Access</span>
       <h2>Chairperson Commitment Details</h2>
       <p class="lead">पहिले पद र त्यसपछि Chairperson को नाम छान्नुहोस्। विवरण हेर्न PIN verification आवश्यक छ।</p>
@@ -916,7 +1102,72 @@
       <div id="status" class="status"></div>
     </section>
 
-    <section id="result" class="result">
+    
+    <section id="topicPanel" class="panel selector-panel topic-panel">
+      <span class="section-kicker">◆ Topic Analysis</span>
+      <h2>Contribution / Commitment Report</h2>
+      <p class="lead">Google Sheet को कुनै topic छानेर कस-कसले commitment/contribution गरेका छन् र amount भएको topic मा total कति छ हेर्नुहोस्।</p>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="topicSelect">1. Topic</label>
+          <div class="select-wrap">
+            <select id="topicSelect">
+              <option value="">— Topic छान्नुहोस् —</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="topicPositionFilter">2. Filter</label>
+          <div class="select-wrap">
+            <select id="topicPositionFilter">
+              <option value="All">All Region + Zone</option>
+              <option value="Region Chairperson">Region Chairperson</option>
+              <option value="Zone Chairperson">Zone Chairperson</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button id="viewTopicReport" class="topic-action" type="button">🔐 PIN Verify गरेर Report हेर्नुहोस्</button>
+      <div id="topicStatus" class="status"></div>
+    </section>
+
+    <section id="topicResult" class="topic-result">
+      <div class="topic-summary">
+        <div class="summary-card"><span>Total Contributors</span><strong id="sumTotal">0</strong></div>
+        <div class="summary-card"><span>Region</span><strong id="sumRegion">0</strong></div>
+        <div class="summary-card"><span>Zone</span><strong id="sumZone">0</strong></div>
+        <div class="summary-card amount-card"><span>Total Amount</span><strong id="sumAmount">—</strong></div>
+      </div>
+
+      <div class="topic-report-card">
+        <div class="topic-report-head">
+          <div>
+            <span class="section-kicker">Verified Report</span>
+            <h3 id="topicReportTitle">Topic Report</h3>
+          </div>
+          <button id="changeTopic" class="lock-again" type="button">Change Topic</button>
+        </div>
+        <div class="table-wrap">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Chairperson Name</th>
+                <th>Club</th>
+                <th>Position</th>
+                <th>Commitment / Amount</th>
+              </tr>
+            </thead>
+            <tbody id="topicRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+<section id="result" class="result">
       <div class="profile">
         <div class="profile-main">
           <div id="avatar" class="avatar">CP</div>
@@ -992,25 +1243,42 @@
     const verifyPin = document.getElementById('verifyPin');
     const cancelPin = document.getElementById('cancelPin');
 
+    const chairpersonPanel = document.getElementById('chairpersonPanel');
+    const topicPanel = document.getElementById('topicPanel');
+    const topicResult = document.getElementById('topicResult');
+    const topicSelect = document.getElementById('topicSelect');
+    const topicPositionFilter = document.getElementById('topicPositionFilter');
+    const topicStatus = document.getElementById('topicStatus');
+
     let chairpersons = {};
     let selectedPosition = '';
     let selectedName = '';
+    let topics = [];
+    let pinPurpose = 'chairperson';
 
-    document.addEventListener('DOMContentLoaded', loadChairpersons);
+    document.addEventListener('DOMContentLoaded', function () {
+      loadChairpersons();
+      loadTopics();
+    });
 
     positionSelect.addEventListener('change', function () {
       hideResult();
       selectedPosition = this.value;
       selectedName = '';
+      closePinModal();
       fillNames(selectedPosition);
     });
 
     nameSelect.addEventListener('change', function () {
+      // v1.4 FIX: every new name starts a completely fresh verification flow.
       hideResult();
+      closePinModal();
+      selectedPosition = positionSelect.value;
       selectedName = this.value;
+      pinPurpose = 'chairperson';
 
       if (selectedPosition && selectedName) {
-        openPinModal();
+        setTimeout(openPinModal, 30);
       }
     });
 
@@ -1018,6 +1286,7 @@
 
     document.getElementById('lockAgain').addEventListener('click', function () {
       hideResult();
+      pinPurpose = 'chairperson';
       if (selectedName) openPinModal();
     });
 
@@ -1125,7 +1394,9 @@
       pinInput.value = '';
       pinMessage.textContent = '';
       document.getElementById('pinText').textContent =
-        selectedName + ' को commitment विवरण हेर्न PIN Code verify गर्नुहोस्।';
+        pinPurpose === 'topic'
+          ? 'Topic-wise contribution report हेर्न PIN Code verify गर्नुहोस्।'
+          : selectedName + ' को commitment विवरण हेर्न PIN Code verify गर्नुहोस्।';
 
       pinModal.classList.add('show');
       pinModal.setAttribute('aria-hidden', 'false');
@@ -1158,12 +1429,21 @@
         // Raw PIN is not placed in the request URL.
         const pinHash = await sha256(pin);
 
-        const data = await apiGet({
-          action: 'details',
-          position: selectedPosition,
-          name: selectedName,
-          pinHash: pinHash
-        });
+        const params = pinPurpose === 'topic'
+          ? {
+              action: 'topicReport',
+              topicIndex: topicSelect.value,
+              positionFilter: topicPositionFilter.value,
+              pinHash: pinHash
+            }
+          : {
+              action: 'details',
+              position: selectedPosition,
+              name: selectedName,
+              pinHash: pinHash
+            };
+
+        const data = await apiGet(params);
 
         if (!data.ok) {
           if (data.code === 'INVALID_PIN') {
@@ -1175,12 +1455,155 @@
         }
 
         closePinModal();
-        renderResult(data);
+
+        if (pinPurpose === 'topic') {
+          renderTopicReport(data);
+        } else {
+          renderResult(data);
+        }
       } catch (error) {
         pinMessage.textContent = 'Verification हुन सकेन। ' + error.message;
       } finally {
         setVerifyLoading(false);
       }
+    }
+
+
+    document.querySelectorAll('.mode-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
+        document.querySelectorAll('.mode-btn').forEach(function (btn) {
+          btn.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        const mode = this.dataset.mode;
+        hideResult();
+        topicResult.classList.remove('show');
+        closePinModal();
+
+        if (mode === 'topic') {
+          chairpersonPanel.style.display = 'none';
+          topicPanel.classList.add('show');
+        } else {
+          topicPanel.classList.remove('show');
+          chairpersonPanel.style.display = '';
+        }
+      });
+    });
+
+    document.getElementById('viewTopicReport').addEventListener('click', function () {
+      topicResult.classList.remove('show');
+
+      if (!topicSelect.value) {
+        showTopicStatus('पहिले Topic छान्नुहोस्।', 'error');
+        return;
+      }
+
+      clearTopicStatus();
+      pinPurpose = 'topic';
+      openPinModal();
+    });
+
+    topicSelect.addEventListener('change', function () {
+      topicResult.classList.remove('show');
+      clearTopicStatus();
+    });
+
+    topicPositionFilter.addEventListener('change', function () {
+      topicResult.classList.remove('show');
+    });
+
+    document.getElementById('changeTopic').addEventListener('click', function () {
+      topicResult.classList.remove('show');
+      topicSelect.focus();
+      topicPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    async function loadTopics() {
+      if (!isConfigured()) return;
+
+      try {
+        const data = await apiGet({ action: 'topics' });
+        if (!data.ok) throw new Error(data.message || 'Topic load failed.');
+
+        topics = data.topics || [];
+        topicSelect.innerHTML = '';
+        addOption(topicSelect, '', '— Topic छान्नुहोस् —');
+
+        topics.forEach(function (topic) {
+          addOption(topicSelect, String(topic.index), topic.label);
+        });
+      } catch (error) {
+        showTopicStatus('Topic list load हुन सकेन। ' + error.message, 'error');
+      }
+    }
+
+    function renderTopicReport(data) {
+      const summary = data.summary || {};
+      const contributors = data.contributors || [];
+
+      document.getElementById('topicReportTitle').textContent = data.topic || 'Topic Report';
+      document.getElementById('sumTotal').textContent = summary.totalContributors || 0;
+      document.getElementById('sumRegion').textContent = summary.regionCount || 0;
+      document.getElementById('sumZone').textContent = summary.zoneCount || 0;
+      document.getElementById('sumAmount').textContent =
+        summary.hasNumericAmounts
+          ? 'Rs. ' + formatNumber(summary.totalAmount || 0)
+          : 'N/A';
+
+      const tbody = document.getElementById('topicRows');
+      tbody.innerHTML = '';
+
+      if (!contributors.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 5;
+        cell.className = 'empty-report';
+        cell.textContent = 'यो topic/filter मा commitment/contribution data भेटिएन।';
+        row.appendChild(cell);
+        tbody.appendChild(row);
+      } else {
+        contributors.forEach(function (item, index) {
+          const row = document.createElement('tr');
+
+          [
+            String(index + 1),
+            item.name || '—',
+            item.club || '—',
+            item.position || '—',
+            item.amount !== null && item.amount !== undefined
+              ? 'Rs. ' + formatNumber(item.amount)
+              : (item.value || '—')
+          ].forEach(function (text) {
+            const td = document.createElement('td');
+            td.textContent = text;
+            row.appendChild(td);
+          });
+
+          tbody.appendChild(row);
+        });
+      }
+
+      topicResult.classList.add('show');
+      setTimeout(function () {
+        topicResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString('en-IN', {
+        maximumFractionDigits: 2
+      });
+    }
+
+    function showTopicStatus(message, type) {
+      topicStatus.textContent = message;
+      topicStatus.className = 'status show ' + (type || 'info');
+    }
+
+    function clearTopicStatus() {
+      topicStatus.textContent = '';
+      topicStatus.className = 'status';
     }
 
     function renderResult(data) {
